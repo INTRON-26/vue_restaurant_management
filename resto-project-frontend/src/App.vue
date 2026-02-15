@@ -2,7 +2,7 @@
   <div id="app">
     <nav class="nav">
       <router-link class="nav-link" to="/">Home</router-link>
-      <router-link class="nav-link" to="/menu-management">Menu</router-link>
+      <router-link v-if="isStaffOrAdmin" class="nav-link" to="/menu-management">Menu</router-link>
       <router-link class="nav-link" to="/signup">Sign Up</router-link>
       <router-link class="nav-link" to="/login">Log In</router-link>
       <button v-if="isAuthenticated" class="nav-button" v-on:click="logout">Log Out</button>
@@ -14,14 +14,37 @@
 <script>
 export default {
   name: 'App',
+  data() {
+    return {
+      hasToken: false,
+      userRole: ''
+    };
+  },
   computed: {
     isAuthenticated() {
-      return !!localStorage.getItem('accessToken');
+      return this.hasToken;
+    },
+    isStaffOrAdmin() {
+      return this.hasToken && ['admin', 'staff'].includes(this.userRole);
+    }
+  },
+  created() {
+    this.loadAuthState();
+  },
+  watch: {
+    $route() {
+      this.loadAuthState();
     }
   },
   methods: {
+    loadAuthState() {
+      this.hasToken = !!localStorage.getItem('accessToken');
+      this.userRole = localStorage.getItem('userRole') || '';
+    },
     logout() {
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('userRole');
+      this.loadAuthState();
       this.$router.push('/');
     }
   }

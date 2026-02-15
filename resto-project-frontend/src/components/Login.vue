@@ -40,6 +40,8 @@ export default {
           password: this.password
         });
         localStorage.setItem('accessToken', response.data.access_token);
+        const me = await api.get('/auth/me');
+        localStorage.setItem('userRole', me.data.role);
         this.message = 'Logged in successfully.';
         this.$router.push('/');
       } catch (err) {
