@@ -16,6 +16,10 @@ class ReservationCreate(ReservationBase):
     pass
 
 
+class ReservationUpdate(BaseModel):
+    status: str
+
+
 class ReservationRead(ReservationBase):
     id: int
     status: str

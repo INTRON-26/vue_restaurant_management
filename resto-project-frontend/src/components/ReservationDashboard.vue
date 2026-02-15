@@ -8,13 +8,21 @@
     <section class="dashboard-card">
       <div class="list-header">
         <h3>All Reservations</h3>
-        <button class="outline-btn" v-on:click="fetchReservations">Refresh</button>
+        <div class="toolbar">
+          <select v-model="statusFilter" class="select-field">
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button class="outline-btn" v-on:click="fetchReservations">Refresh</button>
+        </div>
       </div>
 
       <div v-if="loading" class="empty">Loading reservations...</div>
-      <div v-else-if="items.length === 0" class="empty">No reservations found.</div>
+      <div v-else-if="filteredItems.length === 0" class="empty">No reservations found.</div>
 
-      <div v-for="item in items" :key="item.id" class="reservation-item">
+      <div v-for="item in filteredItems" :key="item.id" class="reservation-item">
         <div class="item-grid">
           <div>
             <p class="label">Date</p>
@@ -32,6 +40,14 @@
             <p class="label">Guest</p>
             <p>{{ item.guest_name || 'Account user' }}</p>
           </div>
+        </div>
+        <div class="item-actions">
+          <button class="outline-btn" v-on:click="updateStatus(item, 'confirmed')" :disabled="item.status === 'confirmed'">
+            Approve
+          </button>
+          <button class="danger-btn" v-on:click="updateStatus(item, 'cancelled')" :disabled="item.status === 'cancelled'">
+            Cancel
+          </button>
         </div>
       </div>
 
@@ -51,8 +67,17 @@ export default {
       loading: false,
       message: '',
       error: '',
-      items: []
+      items: [],
+      statusFilter: ''
     };
+  },
+  computed: {
+    filteredItems() {
+      if (!this.statusFilter) {
+        return this.items;
+      }
+      return this.items.filter(item => item.status === this.statusFilter);
+    }
   },
   mounted() {
     this.fetchReservations();
@@ -74,6 +99,20 @@ export default {
     formatDate(value) {
       if (!value) return '';
       return new Date(value).toLocaleString();
+    },
+    async updateStatus(item, status) {
+      this.message = '';
+      this.error = '';
+      try {
+        const response = await api.patch(`/reservations/${item.id}/status`, { status });
+        const index = this.items.findIndex(entry => entry.id === item.id);
+        if (index !== -1) {
+          this.$set(this.items, index, response.data);
+        }
+        this.message = `Reservation ${status}.`;
+      } catch (err) {
+        this.error = err.response?.data?.detail || 'Failed to update reservation.';
+      }
     }
   }
 };
@@ -123,6 +162,20 @@ export default {
   margin-bottom: 12px;
 }
 
+.toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.select-field {
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  padding: 0 8px;
+  color: #1f2a27;
+}
+
 .reservation-item {
   padding: 14px 16px;
   border-radius: 10px;
@@ -135,6 +188,12 @@ export default {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+}
+
+.item-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .label {
@@ -152,6 +211,15 @@ export default {
   background: #ffffff;
   color: var(--primary);
   border: 1px solid var(--primary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.danger-btn {
+  background: #ffffff;
+  color: #a60000;
+  border: 1px solid #a60000;
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -179,11 +247,21 @@ export default {
   .item-grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 @media (max-width: 520px) {
   .item-grid {
     grid-template-columns: 1fr;
+  }
+
+  .item-actions {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>
