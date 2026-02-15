@@ -36,7 +36,10 @@ export default {
 </script>
 <style>
 .register {
+    /* Center the form on the page */
     margin-top: 50px;
+    text-align: center;
+
 }
 
 .app-logo {
