@@ -3,6 +3,9 @@ import Home from './components/Home.vue';
 import SignUp from './components/SignUp.vue';
 import Login from './components/Login.vue';
 import MenuManagement from './components/MenuManagement.vue';
+import ReservationForm from './components/ReservationForm.vue';
+import MyReservations from './components/MyReservations.vue';
+import ReservationDashboard from './components/ReservationDashboard.vue';
 import VueRouter from 'vue-router';
 
 Vue.use(VueRouter);
@@ -26,6 +29,23 @@ const routes = [
         path: '/menu-management',
         name: 'MenuManagement',
         component: MenuManagement,
+        meta: { requiresRole: ['admin', 'staff'] }
+    },
+    {
+        path: '/reservations',
+        name: 'Reservations',
+        component: ReservationForm
+    },
+    {
+        path: '/my-reservations',
+        name: 'MyReservations',
+        component: MyReservations,
+        meta: { requiresRole: ['customer'] }
+    },
+    {
+        path: '/reservation-dashboard',
+        name: 'ReservationDashboard',
+        component: ReservationDashboard,
         meta: { requiresRole: ['admin', 'staff'] }
     }
 ];

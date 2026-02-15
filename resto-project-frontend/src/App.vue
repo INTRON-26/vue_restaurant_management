@@ -2,6 +2,9 @@
   <div id="app">
     <nav class="nav">
       <router-link class="nav-link" to="/">Home</router-link>
+      <router-link class="nav-link" to="/reservations">Reservations</router-link>
+      <router-link v-if="isAuthenticated" class="nav-link" to="/my-reservations">My Reservations</router-link>
+      <router-link v-if="isStaffOrAdmin" class="nav-link" to="/reservation-dashboard">Dashboard</router-link>
       <router-link v-if="isStaffOrAdmin" class="nav-link" to="/menu-management">Menu</router-link>
       <router-link class="nav-link" to="/signup">Sign Up</router-link>
       <router-link class="nav-link" to="/login">Log In</router-link>
