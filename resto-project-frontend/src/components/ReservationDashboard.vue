@@ -15,6 +15,8 @@
             <option value="confirmed">Confirmed</option>
             <option value="cancelled">Cancelled</option>
           </select>
+            <input v-model="dateFrom" type="date" class="input-field compact" />
+            <input v-model="dateTo" type="date" class="input-field compact" />
           <button class="outline-btn" v-on:click="fetchReservations">Refresh</button>
         </div>
       </div>
@@ -68,15 +70,43 @@ export default {
       message: '',
       error: '',
       items: [],
-      statusFilter: ''
+      statusFilter: '',
+      dateFrom: '',
+      dateTo: ''
     };
   },
   computed: {
     filteredItems() {
-      if (!this.statusFilter) {
-        return this.items;
-      }
-      return this.items.filter(item => item.status === this.statusFilter);
+      return this.items.filter(item => {
+        if (this.statusFilter && item.status !== this.statusFilter) {
+          return false;
+        }
+
+        if (!this.dateFrom && !this.dateTo) {
+          return true;
+        }
+
+        const itemDate = new Date(item.reserved_for);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+
+        if (this.dateFrom) {
+          const start = new Date(`${this.dateFrom}T00:00:00`);
+          if (itemDate < start) {
+            return false;
+          }
+        }
+
+        if (this.dateTo) {
+          const end = new Date(`${this.dateTo}T23:59:59`);
+          if (itemDate > end) {
+            return false;
+          }
+        }
+
+        return true;
+      });
     }
   },
   mounted() {
@@ -174,6 +204,11 @@ export default {
   border: 1px solid var(--border);
   padding: 0 8px;
   color: #1f2a27;
+}
+
+.input-field.compact {
+  height: 34px;
+  padding-left: 8px;
 }
 
 .reservation-item {
