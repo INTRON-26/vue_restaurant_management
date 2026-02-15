@@ -8,6 +8,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from app.crud.menu_item import create_menu_item
 from app.crud.reservation import create_reservation
 from app.crud.user import create_user, get_user_by_email
+from app.db.init_db import init_db
 from app.db.session import SessionLocal
 from app.models.menu_item import MenuItem
 from app.models.reservation import Reservation
@@ -51,6 +52,7 @@ GUEST_RESERVATIONS = [
 
 
 def seed() -> None:
+    init_db()
     db = SessionLocal()
     try:
         has_users = db.query(User).first() is not None

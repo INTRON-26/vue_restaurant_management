@@ -3,6 +3,7 @@ import Home from './components/Home.vue';
 import SignUp from './components/SignUp.vue';
 import Login from './components/Login.vue';
 import MenuManagement from './components/MenuManagement.vue';
+import MenuList from './components/MenuList.vue';
 import ReservationForm from './components/ReservationForm.vue';
 import MyReservations from './components/MyReservations.vue';
 import ReservationDashboard from './components/ReservationDashboard.vue';
@@ -30,6 +31,11 @@ const routes = [
         name: 'MenuManagement',
         component: MenuManagement,
         meta: { requiresRole: ['admin', 'staff'] }
+    },
+    {
+        path: '/menu',
+        name: 'MenuList',
+        component: MenuList
     },
     {
         path: '/reservations',

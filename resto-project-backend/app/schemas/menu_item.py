@@ -8,6 +8,7 @@ class MenuItemBase(BaseModel):
     name: str
     description: Optional[str] = None
     price: float
+    image_url: Optional[str] = None
     is_available: bool = True
 
 
@@ -19,6 +20,7 @@ class MenuItemUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
+    image_url: Optional[str] = None
     is_available: Optional[bool] = None
 
 

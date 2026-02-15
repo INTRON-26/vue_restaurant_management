@@ -11,5 +11,6 @@ class MenuItem(Base):
     name = Column(String(200), nullable=False)
     description = Column(String(500), nullable=True)
     price = Column(Numeric(10, 2), nullable=False)
+    image_url = Column(String(500), nullable=True)
     is_available = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

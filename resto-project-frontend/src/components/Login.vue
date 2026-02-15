@@ -57,7 +57,11 @@ export default {
 <style>
 .auth-card {
   margin-top: 40px;
+  width: 20%;
   text-align: center;
+  /* Center the form on the page */
+  margin-left: auto;
+    margin-right: auto; 
 }
 
 .app-logo {
@@ -65,15 +69,23 @@ export default {
 }
 
 .input-field {
-  width: 300px;
-  height: 40px;
-  padding-left: 20px;
+  width: min(300px, 85%);
+  height: 42px;
+  padding: 0 16px;
   display: block;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   margin-right: auto;
   margin-left: auto;
-  border: 1px solid #225b48;
-  border-radius: 4px;
+  border: 1px solid #dbe5e2;
+  border-radius: 10px;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #225b48;
+  box-shadow: 0 0 0 3px rgba(34, 91, 72, 0.12);
 }
 
 .submit-btn {

@@ -11,6 +11,10 @@
         <input v-model="form.name" type="text" placeholder="Name" class="input-field" />
         <input v-model.number="form.price" type="number" min="0" step="0.01" placeholder="Price" class="input-field" />
         <input v-model="form.description" type="text" placeholder="Description" class="input-field full" />
+        <div class="upload-row full">
+          <input type="file" accept="image/*" v-on:change="handleNewImage" />
+          <img v-if="form.image_url" :src="imageUrl(form.image_url)" class="preview" alt="Preview" />
+        </div>
         <label class="checkbox">
           <input v-model="form.is_available" type="checkbox" />
           Available
@@ -36,6 +40,10 @@
           <input v-model="item.name" class="input-field" />
           <input v-model.number="item.price" type="number" min="0" step="0.01" class="input-field" />
           <input v-model="item.description" class="input-field" />
+          <div class="upload-row">
+            <input type="file" accept="image/*" v-on:change="handleExistingImage($event, item)" />
+            <img v-if="item.image_url" :src="imageUrl(item.image_url)" class="preview" alt="Preview" />
+          </div>
         </div>
         <div class="item-actions">
           <label class="checkbox">
@@ -65,6 +73,7 @@ export default {
         name: '',
         description: '',
         price: null,
+        image_url: '',
         is_available: true
       }
     };
@@ -92,11 +101,12 @@ export default {
           name: this.form.name,
           description: this.form.description,
           price: this.form.price,
+          image_url: this.form.image_url,
           is_available: this.form.is_available
         };
         const response = await api.post('/menu/', payload);
         this.items.unshift(response.data);
-        this.form = { name: '', description: '', price: null, is_available: true };
+        this.form = { name: '', description: '', price: null, image_url: '', is_available: true };
         this.message = 'Menu item added.';
       } catch (err) {
         this.error = err.response?.data?.detail || 'Failed to add item.';
@@ -112,6 +122,7 @@ export default {
           name: item.name,
           description: item.description,
           price: item.price,
+          image_url: item.image_url,
           is_available: item.is_available
         });
         this.message = 'Menu item updated.';
@@ -128,6 +139,42 @@ export default {
         this.message = 'Menu item deleted.';
       } catch (err) {
         this.error = err.response?.data?.detail || 'Failed to delete item.';
+      }
+    },
+    imageUrl(path) {
+      if (!path) return '';
+      const base = api.defaults.baseURL || '';
+      return `${base.replace('/api/v1', '')}${path}`;
+    },
+    async handleNewImage(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const url = await this.uploadImage(file);
+      if (url) {
+        this.form.image_url = url;
+      }
+    },
+    async handleExistingImage(event, item) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const url = await this.uploadImage(file);
+      if (url) {
+        this.$set(item, 'image_url', url);
+      }
+    },
+    async uploadImage(file) {
+      this.message = '';
+      this.error = '';
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await api.post('/menu/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data.url;
+      } catch (err) {
+        this.error = err.response?.data?.detail || 'Failed to upload image.';
+        return '';
       }
     }
   }
@@ -208,6 +255,20 @@ export default {
 .item-info {
   display: grid;
   gap: 8px;
+}
+
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.preview {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border);
 }
 
 .item-actions {

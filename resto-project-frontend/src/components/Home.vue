@@ -1,7 +1,7 @@
 <template>
     <div class="home">
         <img class="app-logo" src="../assets/logo.png" alt="Restaurant Logo" />
-        <h1>Welcome to the Restaurant Management System</h1>
+        <h1>Where every table tells a story.</h1>
     </div>
 </template>
 <script>

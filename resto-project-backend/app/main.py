@@ -1,5 +1,8 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.api import api_router
 from app.core.config import settings
@@ -9,6 +12,7 @@ from app.db.init_db import init_db
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.APP_NAME, docs_url="/", redoc_url=None)
     init_db()
+    os.makedirs("uploads/menu", exist_ok=True)
     origins = [origin.strip() for origin in settings.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
     app.add_middleware(
         CORSMiddleware,
@@ -17,6 +21,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
     app.include_router(api_router, prefix=settings.API_V1_STR)
     return app
 
