@@ -15,8 +15,10 @@
             <option value="confirmed">Confirmed</option>
             <option value="cancelled">Cancelled</option>
           </select>
-            <input v-model="dateFrom" type="date" class="input-field compact" />
-            <input v-model="dateTo" type="date" class="input-field compact" />
+          <input v-model="dateFrom" type="date" class="input-field compact" />
+          <input v-model="dateTo" type="date" class="input-field compact" />
+            <input v-model="searchQuery" type="text" placeholder="Search guest" class="input-field compact" />
+          <button class="outline-btn" v-on:click="exportCsv">Export CSV</button>
           <button class="outline-btn" v-on:click="fetchReservations">Refresh</button>
         </div>
       </div>
@@ -72,7 +74,8 @@ export default {
       items: [],
       statusFilter: '',
       dateFrom: '',
-      dateTo: ''
+      dateTo: '',
+      searchQuery: ''
     };
   },
   computed: {
@@ -80,6 +83,15 @@ export default {
       return this.items.filter(item => {
         if (this.statusFilter && item.status !== this.statusFilter) {
           return false;
+        }
+
+        if (this.searchQuery) {
+          const needle = this.searchQuery.trim().toLowerCase();
+          const guestName = (item.guest_name || '').toLowerCase();
+          const guestEmail = (item.guest_email || '').toLowerCase();
+          if (!guestName.includes(needle) && !guestEmail.includes(needle)) {
+            return false;
+          }
         }
 
         if (!this.dateFrom && !this.dateTo) {
@@ -129,6 +141,56 @@ export default {
     formatDate(value) {
       if (!value) return '';
       return new Date(value).toLocaleString();
+    },
+    formatCsvField(value) {
+      if (value === null || value === undefined) {
+        return '';
+      }
+      const text = String(value).replace(/"/g, '""');
+      return `"${text}"`;
+    },
+    exportCsv() {
+      this.message = '';
+      this.error = '';
+
+      if (this.filteredItems.length === 0) {
+        this.error = 'No reservations to export.';
+        return;
+      }
+
+      const header = [
+        'id',
+        'reserved_for',
+        'party_size',
+        'status',
+        'guest_name',
+        'guest_email',
+        'guest_phone',
+        'user_id'
+      ];
+
+      const rows = this.filteredItems.map(item => [
+        item.id,
+        item.reserved_for,
+        item.party_size,
+        item.status,
+        item.guest_name || '',
+        item.guest_email || '',
+        item.guest_phone || '',
+        item.user_id || ''
+      ]);
+
+      const csvLines = [header, ...rows]
+        .map(row => row.map(this.formatCsvField).join(','))
+        .join('\n');
+
+      const blob = new Blob([csvLines], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'reservations.csv';
+      link.click();
+      URL.revokeObjectURL(url);
     },
     async updateStatus(item, status) {
       this.message = '';
@@ -196,6 +258,7 @@ export default {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .select-field {
