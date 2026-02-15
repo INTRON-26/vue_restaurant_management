@@ -1,16 +1,37 @@
 <template>
     <div class="register">
         <img class="app-logo" src="../assets/logo.png">
-        <input type="text" placeholder="Username" class="input-field" />
-        <input type="email" placeholder="Email" class="input-field" />
-        <input type="password" placeholder="Password" class="input-field" />
-        <button class="submit-btn">Sign Up</button>
+        <input type="text" v-model="name" placeholder="Name" class="input-field" />
+        <input type="email" v-model="email" placeholder="Email" class="input-field" />
+        <input type="password" v-model="password" placeholder="Password" class="input-field" />
+        <button v-on:click="signUp" class="submit-btn">Sign Up</button>
     </div>
 </template>
 
 <script>
 export default {
-    name: 'SignUp'
+    name: 'SignUp',
+    data() {
+        return {
+            name: '',
+            email: '',
+            password: ''
+        }
+    },
+    methods: {
+        signUp() {
+            // save it as json in local storage
+            const userData = {
+                name: this.name,
+                email: this.email,
+                password: this.password
+            }
+            localStorage.setItem('userData', JSON.stringify(userData));
+            console.log('Name:', this.name);
+            console.log('Email:', this.email);
+            console.log('Password:', this.password);
+        }
+    }
 }
 </script>
 <style>
