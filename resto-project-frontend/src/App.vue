@@ -2,6 +2,7 @@
   <div id="app">
     <nav class="nav">
       <router-link class="nav-link" to="/">Home</router-link>
+      <router-link class="nav-link" to="/menu-management">Menu</router-link>
       <router-link class="nav-link" to="/signup">Sign Up</router-link>
       <router-link class="nav-link" to="/login">Log In</router-link>
       <button v-if="isAuthenticated" class="nav-button" v-on:click="logout">Log Out</button>
