@@ -44,6 +44,22 @@ def list_my_reservations(db: Session = Depends(get_db), current_user=Depends(req
     return list_reservations_for_user(db, current_user.id)
 
 
+@router.patch("/{reservation_id}/cancel", response_model=ReservationRead)
+def cancel_my_reservation(
+    reservation_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role({"customer"})),
+):
+    reservation = get_reservation(db, reservation_id)
+    if not reservation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservation not found")
+    if reservation.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to cancel")
+    if reservation.status == "cancelled":
+        return reservation
+    return update_reservation_status(db, reservation, ReservationUpdate(status="cancelled"))
+
+
 @router.patch(
     "/{reservation_id}/status",
     response_model=ReservationRead,

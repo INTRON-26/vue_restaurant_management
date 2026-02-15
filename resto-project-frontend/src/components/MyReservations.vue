@@ -27,11 +27,33 @@
           <span class="label">Status</span>
           <span class="status">{{ item.status }}</span>
         </div>
+        <div class="item-actions">
+          <button
+            class="danger-btn"
+            v-on:click="openCancelModal(item)"
+            :disabled="item.status === 'cancelled'"
+          >
+            {{ item.status === 'cancelled' ? 'Cancelled' : 'Cancel' }}
+          </button>
+        </div>
       </div>
 
       <p class="message" v-if="message">{{ message }}</p>
       <p class="error" v-if="error">{{ error }}</p>
     </section>
+
+    <div v-if="showCancelModal" class="modal-backdrop" v-on:click.self="closeCancelModal">
+      <div class="modal-card">
+        <h3>Cancel reservation?</h3>
+        <p>This action cannot be undone.</p>
+        <div class="modal-actions">
+          <button class="outline-btn" v-on:click="closeCancelModal">Keep</button>
+          <button class="danger-btn" v-on:click="confirmCancel" :disabled="cancelLoading">
+            {{ cancelLoading ? 'Cancelling...' : 'Cancel reservation' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -45,7 +67,10 @@ export default {
       loading: false,
       message: '',
       error: '',
-      items: []
+      items: [],
+      showCancelModal: false,
+      cancelLoading: false,
+      selectedReservation: null
     };
   },
   mounted() {
@@ -69,6 +94,38 @@ export default {
       if (!value) return '';
       const date = new Date(value);
       return date.toLocaleString();
+    },
+    openCancelModal(item) {
+      if (item.status === 'cancelled') {
+        return;
+      }
+      this.selectedReservation = item;
+      this.showCancelModal = true;
+    },
+    closeCancelModal() {
+      this.showCancelModal = false;
+      this.selectedReservation = null;
+    },
+    async confirmCancel() {
+      if (!this.selectedReservation) {
+        return;
+      }
+      this.message = '';
+      this.error = '';
+      this.cancelLoading = true;
+      try {
+        const response = await api.patch(`/reservations/${this.selectedReservation.id}/cancel`);
+        const index = this.items.findIndex(entry => entry.id === this.selectedReservation.id);
+        if (index !== -1) {
+          this.$set(this.items, index, response.data);
+        }
+        this.message = 'Reservation cancelled.';
+        this.closeCancelModal();
+      } catch (err) {
+        this.error = err.response?.data?.detail || 'Failed to cancel reservation.';
+      } finally {
+        this.cancelLoading = false;
+      }
     }
   }
 };
@@ -126,6 +183,10 @@ export default {
   margin-bottom: 12px;
 }
 
+.item-actions {
+  margin-top: 10px;
+}
+
 .item-row {
   display: flex;
   justify-content: space-between;
@@ -151,6 +212,15 @@ export default {
   cursor: pointer;
 }
 
+.danger-btn {
+  background: #ffffff;
+  color: #a60000;
+  border: 1px solid #a60000;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 .message {
   margin-top: 12px;
   color: var(--primary);
@@ -167,5 +237,32 @@ export default {
   border-radius: 10px;
   border: 1px dashed var(--border);
   color: #5a6b66;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 360px;
+  text-align: left;
+  border: 1px solid var(--border);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  justify-content: flex-end;
 }
 </style>
